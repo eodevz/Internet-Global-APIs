@@ -5,6 +5,7 @@ import os
 import random
 import time
 import html
+import sys
 
 #CONFIGURATIONS
 shuffle_options = True#toggle this off if you dont want the inquirerpy list to shuffle everytime   
@@ -14,6 +15,32 @@ sort_options = False#toggle this on if you want the list to sort by alphabetic o
 
 os.system("cls")
 init()
+#core functions
+def __authorization__(reason):
+    print("== WAIT! ==")
+    print(
+        Fore.CYAN + "[AUTH] "
+        + Style.RESET_ALL + f"This command requires your authorization to \"{reason}\"."
+    )
+    print("Internet Global APIs will never use your data for anything; you can check our entire code on\nhttps://github.com/eodevz/Internet-Global-APIs/edit/main/main.py.")
+    auth = inquirer.select(
+        message="Do you authorize?",
+        choices=["Yes", "No"]
+    ).execute()
+    if auth == "Yes":
+        return True
+    return False
+
+def __onauth__(reason, auth):
+    if not auth:
+        print(
+            Fore.RED + "[NOT AUTHORIZED] "
+            + Style.RESET_ALL + f"You marked \"{reason}\" as "
+            + Fore.RED + "NOT AUTHORIZED"
+            + Style.RESET_ALL + ".\n If you want to mark it as authorized, restart the program."
+        )
+        sys.exit()
+
 #main system
 def __advice__():
     http = "https://api.adviceslip.com/advice"
@@ -36,6 +63,44 @@ def __catsfact__():
         Fore.CYAN + "[CAT FACT] " +
         Style.RESET_ALL + data["fact"]
     )
+
+def __weather__():
+    auth_data = "See your current IP address"
+    auth = __authorization__(auth_data)
+    __onauth__(auth_data, auth)
+    print(Fore.CYAN + "[INFO]" + Style.RESET_ALL + " Getting your IP info...")
+
+    ip_data = requests.get("http://ip-api.com/json/").json()
+
+    city = ip_data["city"]
+    country = ip_data["country"]
+    lat = ip_data["lat"]
+    lon = ip_data["lon"]
+
+    print(
+        Fore.CYAN + "[LOCATION]" + Style.RESET_ALL +
+        f" {city}, {country}"
+    )
+
+    print(Fore.CYAN + "[INFO]" + Style.RESET_ALL + " Getting weather...")
+
+    weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
+
+    weather = requests.get(weather_url).json()
+
+    temp = weather["current_weather"]["temperature"]
+    wind = weather["current_weather"]["windspeed"]
+
+    print(
+        Fore.GREEN + "[WEATHER]" + Style.RESET_ALL +
+        f" Temperature: {temp}°C"
+    )
+
+    print(
+        Fore.GREEN + "[WIND]" + Style.RESET_ALL +
+        f" Wind Speed: {wind} km/h"
+    )
+
 
 def __randomword__():
     http = "https://random-word-api.herokuapp.com/word"
@@ -99,7 +164,8 @@ choices_dictionary = [
     "Random Word",
     "Trivia",
     "Random Fact",
-    "Random Task"
+    "Random Task",
+    "Weather by IP"
 ]
 
 #below this comments theres the main system
@@ -107,6 +173,7 @@ choices_dictionary = [
 if shuffle_options: random.shuffle(choices_dictionary)
 if sort_options: choices_dictionary.sort()
 
+keyboardInt = False
 try:
     choice = inquirer.select(
         message="What do you need for today?",
@@ -125,14 +192,18 @@ try:
         __randomfact__()
     elif choice == "Random Task":
         __randomtask__()
+    elif choice == "Weather by IP":
+        __weather__()
 except KeyboardInterrupt:
+    keyboardInt = True
     os.system("cls")
     print(
         Fore.CYAN + "[SYSTEM] "
         + Style.RESET_ALL + "Attempting to close all current open threads..."
     )
 finally:
-    print(
-        Fore.GREEN + "[SUCCESS] " +
-        Style.RESET_ALL + "Closed all threads. See you next time!"
-    )
+    if keyboardInt:
+        print(
+            Fore.GREEN + "[SUCCESS] " +
+            Style.RESET_ALL + "Closed all threads. See you next time!"
+        )
