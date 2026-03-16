@@ -1,5 +1,5 @@
 # Internet Global APIs
-An English project made by me and myself.
+An English project made by me and myself.<br>
 This project includes alot of free APIs, and doesn't requires any login to use it.
 
 # Instalation
@@ -16,7 +16,7 @@ This project includes alot of free APIs, and doesn't requires any login to use i
 - I highly recommend you to open it on the Windows' terminal, since it's more clear than VSCode's one.
 
 # Why did I create this project?
-I was bored and opened my Visual Studio Code. Then, I noticed a library named _requests_. I went to test it, and I loved it so much that I made this project.
+I was bored and opened my Visual Studio Code. Then, I noticed a library named _requests_. I went to test it, and I loved it so much that I made this project.<br>
 Actually, it's my favorite library from now on.
 
 # Nice things you can do to this project
