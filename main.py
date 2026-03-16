@@ -6,6 +6,12 @@ import random
 import time
 import html
 
+#CONFIGURATIONS
+shuffle_options = True#toggle this off if you dont want the inquirerpy list to shuffle everytime   
+                      #the code runs
+sort_options = False#toggle this on if you want the list to sort by alphabetic order
+                    #this will OVERWRITE shuffle_options.
+
 os.system("cls")
 init()
 #main system
@@ -76,22 +82,57 @@ def __randomfact__():
         + Style.RESET_ALL + data["text"]
     )
 
+def __randomtask__():
+    http = "https://bored-api.appbrewery.com/random"
+    r = requests.get(http)
+    data = r.json()
+
+    print(
+        Fore.CYAN + "[RANDOM TASK] " +
+        Style.RESET_ALL + data["activity"]
+    )
 
 
+choices_dictionary = [
+    "Advice",
+    "Random Cats Fact",
+    "Random Word",
+    "Trivia",
+    "Random Fact",
+    "Random Task"
+]
 
-choice = inquirer.select(
-    message="What do you need for today?",
-    choices=["Advice", "Random Cats Fact", "Random Word", 
-            "Trivia", "Random Fact"]
-).execute()
+#below this comments theres the main system
+#do whatever you want!! but only if you know what ur doingg
+if shuffle_options: random.shuffle(choices_dictionary)
+if sort_options: choices_dictionary.sort()
 
-if choice == "Advice":
-    __advice__()
-elif choice == "Random Cats Fact":
-    __catsfact__()
-elif choice == "Random Word":
-    __randomword__()
-elif choice == "Trivia":
-    __trivia__()
-elif choice == "Random Fact":
-    __randomfact__()
+try:
+    choice = inquirer.select(
+        message="What do you need for today?",
+        choices=choices_dictionary
+    ).execute()
+
+    if choice == "Advice":
+        __advice__()
+    elif choice == "Random Cats Fact":
+        __catsfact__()
+    elif choice == "Random Word":
+        __randomword__()
+    elif choice == "Trivia":
+        __trivia__()
+    elif choice == "Random Fact":
+        __randomfact__()
+    elif choice == "Random Task":
+        __randomtask__()
+except KeyboardInterrupt:
+    os.system("cls")
+    print(
+        Fore.CYAN + "[SYSTEM] "
+        + Style.RESET_ALL + "Attempting to close all current open threads..."
+    )
+finally:
+    print(
+        Fore.GREEN + "[SUCCESS] " +
+        Style.RESET_ALL + "Closed all threads. See you next time!"
+    )
