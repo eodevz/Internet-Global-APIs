@@ -1,3 +1,12 @@
+# INTERNET GLOBAL APIs
+# Made by @hazzereign & @env
+
+# This CLI project shows how nice is to get along with the
+# requests & InquirerPy lib.
+
+# You can create your own CLI with I.G.A. and publish it,
+# but you need to credit the original version.
+
 import requests
 from colorama import Fore, Style, init
 from InquirerPy import inquirer
@@ -16,6 +25,29 @@ sort_options = True#toggle this off if you don't want the list to be sorted by a
 os.system("cls")
 init()
 
+
+
+
+#--core variables--
+#thanks @env for the weather codes
+weather_codes = {
+    0: "Clear sky ☀️",
+    1: "Mainly clear 🌤",
+    2: "Partly cloudy ⛅",
+    3: "Overcast ☁️",
+    45: "Fog 🌫",
+    48: "Depositing rime fog 🌫",
+    51: "Light drizzle 🌦",
+    53: "Moderate drizzle 🌦",
+    55: "Dense drizzle 🌧",
+    61: "Light rain 🌧",
+    63: "Moderate rain 🌧",
+    65: "Heavy rain 🌧",
+    71: "Light snow ❄️",
+    73: "Moderate snow ❄️",
+    75: "Heavy snow ❄️",
+    95: "Thunderstorm ⛈",
+}
 #--core functions--
 #even if u do know what ur doing here, please dont edit
 #i took hours to do thiss.. (15min)
@@ -52,8 +84,8 @@ def __advice__():
     data = r.json()
 
     print(
-        Fore.CYAN + "[ADVICE]" + Style.RESET_ALL +
-        f" {data["slip"]["advice"]}"
+        Fore.CYAN + "[ADVICE] " + Style.RESET_ALL +
+        data["slip"]["advice"]
     )
 
 def __catsfact__():
@@ -92,12 +124,33 @@ def __weather__():
     print(Fore.CYAN + "[INFO]" + Style.RESET_ALL + " Getting weather...")
 
     weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
-
     weather = requests.get(weather_url).json()
 
     temp = weather["current_weather"]["temperature"]
     wind = weather["current_weather"]["windspeed"]
+    weather_code = weather["current_weather"]["weathercode"]
+    is_day = weather["current_weather"]["is_day"]
 
+    condition = weather_codes.get(weather_code, "Unknown")
+    
+    #main weather
+    os.system("cls")
+    
+    def time_consolelog():
+        if is_day == 1:
+            #day
+            print(
+                Fore.YELLOW + "[TIME] " +
+                Style.RESET_ALL + "Day. Time to wake up."
+            )
+        else:
+            #night
+            print(
+                Fore.CYAN + "[TIME] "
+                + Style.RESET_ALL + f"Night. Sweet dreams."
+            )
+    
+    time_consolelog()
     print(
         Fore.GREEN + "[WEATHER]" + Style.RESET_ALL +
         f" Temperature: {temp}°C"
@@ -106,6 +159,11 @@ def __weather__():
     print(
         Fore.GREEN + "[WIND]" + Style.RESET_ALL +
         f" Wind Speed: {wind} km/h"
+    )
+
+    print(
+        Fore.YELLOW+ "[CONDITION] "
+        + Style.RESET_ALL + condition
     )
 
 
@@ -188,24 +246,31 @@ def __randomtask__():
         Style.RESET_ALL + data["activity"]
     )
 
+def __exit__():
+    print(
+        Fore.CYAN + "[SYSTEM] "
+        + Style.RESET_ALL + "User chose to leave. Attempting to close all threads."
+    )
+    sys.exit()
 
-choices_dictionary = [
-    "Advice",
-    "Random Cats Fact",
-    "Random Word",
-    "Trivia",
-    "Random Fact",
-    "Random Task",
-    "Weather by IP"
-]
+commands = {
+    "Advice": __advice__,
+    "Random Cats Fact": __catsfact__,
+    "Random Word": __randomword__,
+    "Trivia": __trivia__,
+    "Random Fact": __randomfact__,
+    "Random Task": __randomtask__,
+    "Weather by IP": __weather__,
+}
+
+choices_dictionary = list(commands.keys())
 
 #below this comments theres the main system
 #do whatever you want!! but only if you know what ur doingg
 if shuffle_options: random.shuffle(choices_dictionary)
 if sort_options: choices_dictionary.sort()
 
-choices_dictionary += ["MORE BELOW!!!!", "Exit"]
-
+choices_dictionary += ["== More Options Below ==", "Exit"]
 forceExit = False
 while True:
     try:
@@ -214,27 +279,15 @@ while True:
             choices=choices_dictionary
         ).execute()
 
-        if choice == "Advice":
-            __advice__()
-        elif choice == "Random Cats Fact":
-            __catsfact__()
-        elif choice == "Random Word":
-            __randomword__()
-        elif choice == "Trivia":
-            __trivia__()
-        elif choice == "Random Fact":
-            __randomfact__()
-        elif choice == "Random Task":
-            __randomtask__()
-        elif choice == "Weather by IP":
-            __weather__()
-        elif choice == "Exit":
+        if choice in commands:
+            commands[choice]()
+
+        if choice == "Exit":
             forceExit = True
-            print(
-                Fore.CYAN + "[SYSTEM] "
-                + Style.RESET_ALL + "Attempting to close all current open threads..."
-            )
-        time.sleep(2)
+            __exit__()
+            
+        if not forceExit:
+            time.sleep(2)
     except KeyboardInterrupt:
         forceExit = True
         os.system("cls")
