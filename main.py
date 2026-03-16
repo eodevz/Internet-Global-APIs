@@ -8,21 +8,24 @@ import html
 import sys
 
 #CONFIGURATIONS
-shuffle_options = True#toggle this off if you dont want the inquirerpy list to shuffle everytime   
+shuffle_options = False#toggle this on if you want the inquirerpy list to shuffle everytime   
                       #the code runs
-sort_options = False#toggle this on if you want the list to sort by alphabetic order
+sort_options = True#toggle this off if you don't want the list to be sorted by alphabetic order
                     #this will OVERWRITE shuffle_options.
 
 os.system("cls")
 init()
-#core functions
+
+#--core functions--
+#even if u do know what ur doing here, please dont edit
+#i took hours to do thiss.. (15min)
 def __authorization__(reason):
     print("== WAIT! ==")
     print(
         Fore.CYAN + "[AUTH] "
         + Style.RESET_ALL + f"This command requires your authorization to \"{reason}\"."
     )
-    print("Internet Global APIs will never use your data for anything; you can check our entire code on\nhttps://github.com/eodevz/Internet-Global-APIs/edit/main/main.py.")
+    print("Internet Global APIs will never use your data for anything; you can check our entire code on\nhttps://github.com/hazzereign/Internet-Global-APIs.")
     auth = inquirer.select(
         message="Do you authorize?",
         choices=["Yes", "No"]
@@ -41,7 +44,7 @@ def __onauth__(reason, auth):
         )
         sys.exit()
 
-#main system
+#--main system--
 def __advice__():
     http = "https://api.adviceslip.com/advice"
 
@@ -70,7 +73,11 @@ def __weather__():
     __onauth__(auth_data, auth)
     print(Fore.CYAN + "[INFO]" + Style.RESET_ALL + " Getting your IP info...")
 
-    ip_data = requests.get("http://ip-api.com/json/").json()
+    try:
+        ip_data = requests.get("http://ip-api.com/json/", timeout=5).json()
+    except requests.RequestException: #if website falls etc etc
+        print(Fore.RED + "[ERROR]" + Style.RESET_ALL + " Failed to get IP data.")
+        return
 
     city = ip_data["city"]
     country = ip_data["country"]
@@ -110,33 +117,57 @@ def __randomword__():
 
     print(data[0])
 
+
 def __trivia__():
+    os.system("cls")
     http = "https://opentdb.com/api.php?amount=1"
     r = requests.get(http)
     data = r.json()
 
-    arr_quest = []
-    correct = data["results"][0]["correct_answer"]
+    question = html.unescape(data["results"][0]["question"])
+    correct = html.unescape(data["results"][0]["correct_answer"])
     wrong = data["results"][0]["incorrect_answers"]
-    arr_quest.append(correct)
-    for i in wrong:
-        arr_quest.append(i)
+
+    arr_quest = [correct] + wrong
 
     random.shuffle(arr_quest)
 
+    letters = ["a", "b", "c", "d"]
+
+    correct_index = arr_quest.index(correct)
+    correct_letter = letters[correct_index]
+
     print(
         Fore.CYAN + "[QUESTION] "
-        + Style.RESET_ALL + html.unescape(data["results"][0]["question"])
+        + Style.RESET_ALL + question
     )
 
-    for i in arr_quest:
-        print(i)
+    for i, option in enumerate(arr_quest):
+        print(f"{letters[i]}) {html.unescape(option)}")
 
-    time.sleep(10)
-    print(
-        Fore.GREEN + "[RIGHT ANSWER] "
-        + Style.RESET_ALL + correct
-    )
+    answer = input("Type your answer. (a/b/c/d)\nYOU: ").lower()
+
+    print("Your answer is...")
+    time.sleep(2)
+
+    if answer == correct_letter:
+        print(
+            Fore.GREEN + "[RIGHT] "
+            + Style.RESET_ALL + f"It is {correct}!"
+        )
+    else:
+        print(
+            Fore.RED + "[WRONG] "
+            + Style.RESET_ALL + f"The correct answer was\n\"{correct}\"."
+        )
+    time.sleep(2)
+    again = inquirer.select(
+        message="Would you like to play again?",
+        choices=["Yes.","Head me back to the main menu."]
+    ).execute()
+
+    if again == "Yes.":
+        __trivia__()
 
 def __randomfact__():
     http = "https://uselessfacts.jsph.pl/api/v2/facts/random"
@@ -173,37 +204,48 @@ choices_dictionary = [
 if shuffle_options: random.shuffle(choices_dictionary)
 if sort_options: choices_dictionary.sort()
 
-keyboardInt = False
-try:
-    choice = inquirer.select(
-        message="What do you need for today?",
-        choices=choices_dictionary
-    ).execute()
+choices_dictionary += ["MORE BELOW!!!!", "Exit"]
 
-    if choice == "Advice":
-        __advice__()
-    elif choice == "Random Cats Fact":
-        __catsfact__()
-    elif choice == "Random Word":
-        __randomword__()
-    elif choice == "Trivia":
-        __trivia__()
-    elif choice == "Random Fact":
-        __randomfact__()
-    elif choice == "Random Task":
-        __randomtask__()
-    elif choice == "Weather by IP":
-        __weather__()
-except KeyboardInterrupt:
-    keyboardInt = True
-    os.system("cls")
-    print(
-        Fore.CYAN + "[SYSTEM] "
-        + Style.RESET_ALL + "Attempting to close all current open threads..."
-    )
-finally:
-    if keyboardInt:
+forceExit = False
+while True:
+    try:
+        choice = inquirer.select(
+            message="What do you need for today?",
+            choices=choices_dictionary
+        ).execute()
+
+        if choice == "Advice":
+            __advice__()
+        elif choice == "Random Cats Fact":
+            __catsfact__()
+        elif choice == "Random Word":
+            __randomword__()
+        elif choice == "Trivia":
+            __trivia__()
+        elif choice == "Random Fact":
+            __randomfact__()
+        elif choice == "Random Task":
+            __randomtask__()
+        elif choice == "Weather by IP":
+            __weather__()
+        elif choice == "Exit":
+            forceExit = True
+            print(
+                Fore.CYAN + "[SYSTEM] "
+                + Style.RESET_ALL + "Attempting to close all current open threads..."
+            )
+        time.sleep(2)
+    except KeyboardInterrupt:
+        forceExit = True
+        os.system("cls")
         print(
-            Fore.GREEN + "[SUCCESS] " +
-            Style.RESET_ALL + "Closed all threads. See you next time!"
+            Fore.CYAN + "[SYSTEM] "
+            + Style.RESET_ALL + "Attempting to close all current open threads..."
         )
+    finally:
+        if forceExit:
+            print(
+                Fore.GREEN + "[SUCCESS] " +
+                Style.RESET_ALL + "Closed all threads. See you next time!"
+            )
+            sys.exit()
